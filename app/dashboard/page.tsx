@@ -52,12 +52,14 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
+      
+      // Try to fetch from real API
       const response = await usersAPI.getEngagement()
       setStats(response.data.data)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
       
-      // Mock data fallback
+      // Fallback to mock data if API fails
       setStats({
         total_communities: 25,
         total_posts: 156,
