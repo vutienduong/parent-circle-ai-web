@@ -25,6 +25,8 @@ export default function Navigation() {
     { href: '/chat', label: 'ParentChat AI', icon: MessageCircle },
     { href: '/scheduler', label: 'Lịch gia đình', icon: Calendar },
     { href: '/marketplace', label: 'Chợ phụ huynh', icon: ShoppingBag },
+    { href: '/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/progress', label: 'Tiến độ', icon: Home },
   ];
 
   const isActive = (href: string) => {
