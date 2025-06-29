@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot, User, Heart, Sparkles, MessageCircle, Lightbulb, Clock, Copy, ThumbsUp, RotateCcw } from 'lucide-react'
 import Link from 'next/link'
 import { chatAPI } from '@/lib/api'
 
@@ -198,230 +197,199 @@ Sức khỏe của con luôn là ưu tiên hàng đầu của phụ huynh:
   const suggestedQuestions = [
     {
       icon: '😴',
-      question: 'Làm thế nào để bé ngủ xuyên đêm?',
+      text: 'Con tôi khó ngủ, phải làm sao?',
       category: 'Giấc ngủ'
     },
     {
       icon: '🍎',
-      question: 'Thực đơn dinh dưỡng cho bé 2 tuổi?',
+      text: 'Thực đơn ăn dặm cho bé 6 tháng',
       category: 'Dinh dưỡng'
     },
     {
       icon: '📚',
-      question: 'Cách dạy bé tự lập từ sớm?',
+      text: 'Hoạt động phát triển trí tuệ cho trẻ 2 tuổi',
       category: 'Giáo dục'
     },
     {
-      icon: '🎨',
-      question: 'Hoạt động vui chơi phát triển trí tuệ?',
-      category: 'Hoạt động'
-    },
-    {
-      icon: '🏥',
-      question: 'Dấu hiệu bé bị ốm cần chú ý?',
+      icon: '🤒',
+      text: 'Bé sốt và quấy khóc, cần làm gì?',
       category: 'Sức khỏe'
-    },
-    {
-      icon: '👶',
-      question: 'Các mốc phát triển quan trọng của trẻ?',
-      category: 'Phát triển'
     }
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Chat Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4">
-            <MessageCircle className="h-10 w-10 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-xl">🤖</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">ParentChat AI</h1>
+              <p className="text-sm text-gray-500">Trợ lý AI chuyên về nuôi dạy con</p>
+            </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-            ParentChat AI
-            <span className="ml-2">🤖</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-4">
-            Trợ lý AI thông minh chuyên về nuôi dạy con
-          </p>
-          <div className="flex items-center justify-center space-x-6 text-sm text-gray-500">
-            <div className="flex items-center">
-              <Sparkles className="h-4 w-4 mr-1 text-yellow-500" />
-              <span>Phản hồi thông minh</span>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={handleNewChat}
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Cuộc trò chuyện mới"
+            >
+              <span className="text-lg">🔄</span>
+            </button>
+            <Link
+              href="/communities"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              💬 Tham gia cộng đồng
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Suggested Questions - Only show when messages is just the welcome message */}
+        {messages.length === 1 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <span className="mr-2">💡</span>
+              Câu hỏi gợi ý
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {suggestedQuestions.map((question, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSuggestedQuestion(question.text)}
+                  className="text-left p-4 bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 group"
+                >
+                  <div className="flex items-start space-x-3">
+                    <span className="text-2xl">{question.icon}</span>
+                    <div className="flex-1">
+                      <div className="text-sm text-blue-600 font-medium mb-1">{question.category}</div>
+                      <div className="text-gray-900 font-medium">{question.text}</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
             </div>
-            <div className="flex items-center">
-              <Clock className="h-4 w-4 mr-1 text-green-500" />
-              <span>24/7 hỗ trợ</span>
-            </div>
-            <div className="flex items-center">
-              <Heart className="h-4 w-4 mr-1 text-red-500" />
-              <span>Được yêu thích</span>
+          </div>
+        )}
+
+        {/* Chat Messages */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[600px]">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} group`}
+              >
+                <div className={`flex space-x-3 max-w-3xl ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    message.role === 'user' 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gradient-to-br from-purple-500 to-blue-600 text-white'
+                  }`}>
+                    <span className="text-sm">
+                      {message.role === 'user' ? '👤' : '🤖'}
+                    </span>
+                  </div>
+                  <div className={`relative px-4 py-3 rounded-2xl ${
+                    message.role === 'user'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}>
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                    <div className={`text-xs mt-2 ${
+                      message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
+                    }`}>
+                      {message.timestamp.toLocaleTimeString('vi-VN', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </div>
+                    
+                    {message.role === 'assistant' && (
+                      <div className="flex items-center space-x-2 mt-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleCopyMessage(message.content)}
+                          className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                          title="Sao chép"
+                        >
+                          <span className="text-sm">📋</span>
+                        </button>
+                        <button
+                          onClick={() => handleMarkHelpful(message.id)}
+                          className={`p-1 transition-colors ${
+                            message.helpful 
+                              ? 'text-green-600' 
+                              : 'text-gray-400 hover:text-green-600'
+                          }`}
+                          title="Hữu ích"
+                        >
+                          <span className="text-sm">👍</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex space-x-3 max-w-3xl">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
+                    <span className="text-white text-sm">🤖</span>
+                  </div>
+                  <div className="bg-gray-100 rounded-2xl px-4 py-3">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex space-x-3">
+              <textarea
+                value={inputMessage}
+                onChange={(e) => setInputMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Hỏi tôi về nuôi dạy con... (Enter để gửi, Shift+Enter để xuống dòng)"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none max-h-32"
+                rows={1}
+                disabled={isLoading}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!inputMessage.trim() || isLoading}
+                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+              >
+                <span>📤</span>
+                <span className="hidden sm:inline">Gửi</span>
+              </button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Suggested Questions Sidebar */}
-          <div className="lg:col-span-1 order-2 lg:order-1">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-6 sticky top-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
-                Câu hỏi phổ biến
-              </h3>
-              <div className="space-y-3">
-                {suggestedQuestions.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSuggestedQuestion(item.question)}
-                    className="w-full text-left p-3 border border-gray-200 rounded-xl hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 group"
-                  >
-                    <div className="flex items-start space-x-3">
-                      <span className="text-2xl">{item.icon}</span>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 group-hover:text-blue-600 line-clamp-2">
-                          {item.question}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">{item.category}</div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <button
-                  onClick={handleNewChat}
-                  className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  <span>Cuộc trò chuyện mới</span>
-                </button>
-              </div>
-            </div>
+        {/* Footer Info */}
+        <div className="mt-6 text-center text-sm text-gray-500">
+          <div className="flex items-center justify-center space-x-4">
+            <span>⚡ Phản hồi nhanh</span>
+            <span>🔒 Bảo mật thông tin</span>
+            <span>🎯 Tư vấn chuyên nghiệp</span>
           </div>
-
-          {/* Chat Area */}
-          <div className="lg:col-span-3 order-1 lg:order-2">
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-              {/* Messages */}
-              <div className="h-[600px] overflow-y-auto p-6 space-y-6">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`flex max-w-[80%] ${message.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                      <div className={`flex-shrink-0 ${message.role === 'user' ? 'ml-3' : 'mr-3'}`}>
-                        {message.role === 'user' ? (
-                          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
-                            <User className="h-5 w-5 text-white" />
-                          </div>
-                        ) : (
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                            <Bot className="h-5 w-5 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div
-                          className={`px-4 py-3 rounded-2xl ${
-                            message.role === 'user'
-                              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white'
-                              : 'bg-gray-50 text-gray-900 border border-gray-200'
-                          }`}
-                        >
-                          <div className="text-sm leading-relaxed whitespace-pre-wrap">
-                            {message.content}
-                          </div>
-                        </div>
-                        
-                        {/* Message actions */}
-                        <div className="flex items-center justify-between mt-2 px-2">
-                          <div className={`text-xs ${message.role === 'user' ? 'text-green-600' : 'text-gray-500'}`}>
-                            {message.timestamp.toLocaleTimeString('vi-VN', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </div>
-                          
-                          {message.role === 'assistant' && (
-                            <div className="flex items-center space-x-2">
-                              <button
-                                onClick={() => handleCopyMessage(message.content)}
-                                className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                                title="Sao chép"
-                              >
-                                <Copy className="h-4 w-4" />
-                              </button>
-                              <button
-                                onClick={() => handleMarkHelpful(message.id)}
-                                className={`p-1 transition-colors ${
-                                  message.helpful 
-                                    ? 'text-blue-600' 
-                                    : 'text-gray-400 hover:text-blue-600'
-                                }`}
-                                title="Hữu ích"
-                              >
-                                <ThumbsUp className="h-4 w-4" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="flex">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-3">
-                        <Bot className="h-5 w-5 text-white" />
-                      </div>
-                      <div className="bg-gray-50 border border-gray-200 px-4 py-3 rounded-2xl">
-                        <div className="flex items-center space-x-2">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          </div>
-                          <span className="text-sm text-gray-600">ParentChat AI đang suy nghĩ...</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Input Area */}
-              <div className="border-t border-gray-200 p-6 bg-white/50">
-                <div className="flex space-x-4">
-                  <div className="flex-1">
-                    <textarea
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Hỏi ParentChat AI về bất kỳ vấn đề nuôi dạy con nào..."
-                      className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
-                      rows={3}
-                      disabled={isLoading}
-                    />
-                  </div>
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!inputMessage.trim() || isLoading}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-xl hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  >
-                    <Send className="h-5 w-5" />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-                  <span>Nhấn Enter để gửi, Shift + Enter để xuống dòng</span>
-                  <span>Được hỗ trợ bởi AI 🤖</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <p className="mt-2">
+            Được hỗ trợ bởi AI và cộng đồng 12,000+ phụ huynh Việt Nam
+          </p>
         </div>
       </div>
     </div>
