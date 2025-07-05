@@ -3,8 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '../../lib/auth-context'
-import { ApiError } from '../../lib/types'
+import { setAuthToken } from '@/lib/auth'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -18,7 +17,6 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const { register } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,13 +30,44 @@ export default function RegisterPage() {
     }
 
     try {
-      await register(formData)
+      console.log('Attempting registration with:', formData.email)
       
-      // Redirect to dashboard
-      router.push('/dashboard')
+      const response = await fetch('http://localhost:3003/api/v1/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          password_confirmation: formData.password_confirmation,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          location: formData.location
+        })
+      })
+
+      console.log('Registration response status:', response.status)
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log('Registration successful:', result)
+        
+        // Save token
+        if (result.token) {
+          setAuthToken(result.token)
+          router.push('/dashboard')
+        } else {
+          setError('Không nhận được token từ server')
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.log('Registration error:', errorData)
+        setError(errorData.error || 'Đăng ký thất bại. Vui lòng thử lại.')
+      }
     } catch (err: any) {
-      const apiError = err as ApiError
-      setError(apiError.message || 'Đăng ký thất bại. Vui lòng thử lại.')
+      console.error('Registration error:', err)
+      setError('Lỗi kết nối. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }

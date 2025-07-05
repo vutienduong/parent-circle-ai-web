@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, MapPin, Tag, Plus, Search, Heart, Star, TrendingUp, Clock, Filter } from 'lucide-react'
+import { Users, MapPin, Plus, Search, TrendingUp, Clock, Filter } from 'lucide-react'
 import Link from 'next/link'
 import { communitiesAPI } from '@/lib/api'
 

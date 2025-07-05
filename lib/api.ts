@@ -33,7 +33,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear auth token on unauthorized
       localStorage.removeItem('auth_token')
-      window.location.href = '/auth/login'
+      // Temporary comment out redirect for debugging
+      console.error('401 Unauthorized detected:', error.response)
+      // window.location.href = '/auth/login'
     }
     return Promise.reject(error)
   }

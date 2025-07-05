@@ -3,8 +3,7 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useAuth } from '../../lib/auth-context'
-import { ApiError } from '../../lib/types'
+import { setAuthToken } from '@/lib/auth'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -14,7 +13,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
-  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,13 +20,40 @@ export default function LoginPage() {
     setError('')
 
     try {
-      await login(formData.email, formData.password)
+      console.log('Attempting login with:', formData.email)
       
-      // Redirect to dashboard
-      router.push('/dashboard')
+      const response = await fetch('http://localhost:3003/api/v1/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      })
+
+      console.log('Login response status:', response.status)
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log('Login successful:', result)
+        
+        // Save token
+        if (result.token) {
+          setAuthToken(result.token)
+          router.push('/dashboard')
+        } else {
+          setError('Không nhận được token từ server')
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.log('Login error:', errorData)
+        setError(errorData.error || 'Đăng nhập thất bại. Vui lòng thử lại.')
+      }
     } catch (err: any) {
-      const apiError = err as ApiError
-      setError(apiError.message || 'Đăng nhập thất bại. Vui lòng thử lại.')
+      console.error('Login error:', err)
+      setError('Lỗi kết nối. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
