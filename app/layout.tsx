@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "./components/Navigation";
+import { Providers } from "./lib/providers";
 
 const inter = Inter({ subsets: ["latin", "vietnamese"] });
 
@@ -25,12 +26,14 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-          <Navigation />
-          <main className="pt-16">
-            {children}
-          </main>
-        </div>
+        <Providers>
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <Navigation />
+            <main className="pt-16">
+              {children}
+            </main>
+          </div>
+        </Providers>
       </body>
     </html>
   );
