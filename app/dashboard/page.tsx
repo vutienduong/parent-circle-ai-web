@@ -13,7 +13,7 @@ import {
   Activity
 } from 'lucide-react'
 import Link from 'next/link'
-import { usersAPI } from '@/lib/api'
+import api from '../../lib/api'
 
 interface DashboardStats {
   total_communities: number
@@ -54,7 +54,7 @@ export default function DashboardPage() {
       setLoading(true)
       
       // Try to fetch from real API
-      const response = await usersAPI.getEngagement()
+      const response = await api.get('/dashboard')
       setStats(response.data.data)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)

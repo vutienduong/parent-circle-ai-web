@@ -74,10 +74,43 @@ export default function Navigation() {
 
           {/* User Profile */}
           <div className="hidden md:flex items-center space-x-4">
-            <button className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all duration-200">
-              <User className="w-4 h-4" />
-              <span>Đăng nhập</span>
-            </button>
+            {/* Check if user is logged in based on token */}
+            {typeof window !== 'undefined' && localStorage.getItem('auth_token') ? (
+              <div className="flex items-center space-x-4">
+                <Link 
+                  href="/dashboard"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all duration-200"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Profile</span>
+                </Link>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('auth_token');
+                    window.location.href = '/';
+                  }}
+                  className="px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
+                >
+                  Đăng xuất
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link 
+                  href="/auth/login"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all duration-200"
+                >
+                  <User className="w-4 h-4" />
+                  <span>Đăng nhập</span>
+                </Link>
+                <Link 
+                  href="/auth/register"
+                  className="px-3 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+                >
+                  Đăng ký
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -114,10 +147,45 @@ export default function Navigation() {
                 );
               })}
               <div className="border-t border-gray-200 pt-2 mt-2">
-                <button className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all duration-200 w-full">
-                  <User className="w-5 h-5" />
-                  <span>Đăng nhập</span>
-                </button>
+                {typeof window !== 'undefined' && localStorage.getItem('auth_token') ? (
+                  <div className="space-y-2">
+                    <Link 
+                      href="/dashboard"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all duration-200 w-full"
+                    >
+                      <User className="w-5 h-5" />
+                      <span>Profile</span>
+                    </Link>
+                    <button 
+                      onClick={() => {
+                        localStorage.removeItem('auth_token');
+                        window.location.href = '/';
+                      }}
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 w-full"
+                    >
+                      <span>Đăng xuất</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Link 
+                      href="/auth/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all duration-200 w-full"
+                    >
+                      <User className="w-5 h-5" />
+                      <span>Đăng nhập</span>
+                    </Link>
+                    <Link 
+                      href="/auth/register"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 w-full"
+                    >
+                      <span>Đăng ký</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </div>
