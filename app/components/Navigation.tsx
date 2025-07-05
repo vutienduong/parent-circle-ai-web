@@ -14,10 +14,12 @@ import {
   Heart,
   User
 } from 'lucide-react';
+import { useAuth } from '../lib/auth-context';
 
 export default function Navigation() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
 
   const navItems = [
     { href: '/', label: 'Trang chủ', icon: Home },
@@ -74,9 +76,11 @@ export default function Navigation() {
 
           {/* User Profile */}
           <div className="hidden md:flex items-center space-x-4">
-            {/* Check if user is logged in based on token */}
-            {typeof window !== 'undefined' && localStorage.getItem('auth_token') ? (
+            {isAuthenticated ? (
               <div className="flex items-center space-x-4">
+                <span className="text-sm text-gray-600 font-medium">
+                  Xin chào, {user?.first_name || user?.full_name || 'Người dùng'}
+                </span>
                 <Link 
                   href="/dashboard"
                   className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 transition-all duration-200"
@@ -85,10 +89,7 @@ export default function Navigation() {
                   <span>Profile</span>
                 </Link>
                 <button 
-                  onClick={() => {
-                    localStorage.removeItem('auth_token');
-                    window.location.href = '/';
-                  }}
+                  onClick={logout}
                   className="px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200"
                 >
                   Đăng xuất
@@ -147,8 +148,11 @@ export default function Navigation() {
                 );
               })}
               <div className="border-t border-gray-200 pt-2 mt-2">
-                {typeof window !== 'undefined' && localStorage.getItem('auth_token') ? (
+                {isAuthenticated ? (
                   <div className="space-y-2">
+                    <div className="px-4 py-2 text-sm text-gray-600 font-medium">
+                      Xin chào, {user?.first_name || user?.full_name || 'Người dùng'}
+                    </div>
                     <Link 
                       href="/dashboard"
                       onClick={() => setIsMobileMenuOpen(false)}
@@ -159,8 +163,8 @@ export default function Navigation() {
                     </Link>
                     <button 
                       onClick={() => {
-                        localStorage.removeItem('auth_token');
-                        window.location.href = '/';
+                        logout();
+                        setIsMobileMenuOpen(false);
                       }}
                       className="flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 w-full"
                     >

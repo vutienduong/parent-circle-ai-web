@@ -13,33 +13,9 @@ import {
   Activity
 } from 'lucide-react'
 import Link from 'next/link'
-import api from '../../lib/api'
-
-interface DashboardStats {
-  total_communities: number
-  total_posts: number
-  total_users: number
-  user_engagement: number
-  recent_activities: Array<{
-    type: string
-    title: string
-    description: string
-    created_at: string
-  }>
-  upcoming_events: Array<{
-    id: number
-    title: string
-    start_time: string
-    days_until: number
-  }>
-  pending_tasks: Array<{
-    id: number
-    title: string
-    priority: number
-    due_date: string
-    days_until: number
-  }>
-}
+import { dashboardAPI } from '../../lib/api'
+import { DashboardStats } from '../lib/types'
+import { useAuth } from '../lib/auth-context'
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -54,8 +30,8 @@ export default function DashboardPage() {
       setLoading(true)
       
       // Try to fetch from real API
-      const response = await api.get('/dashboard')
-      setStats(response.data.data)
+      const response = await dashboardAPI.getEngagement()
+      setStats(response.data)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
       

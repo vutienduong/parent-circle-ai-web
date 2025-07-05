@@ -2,27 +2,17 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { authAPI } from '../../lib/api'
-
-interface User {
-  id: number
-  email: string
-  first_name: string
-  last_name: string
-  full_name: string
-  location: string
-  children_ages: number[]
-  parenting_goals: string[]
-  preferences: Record<string, any>
-}
+import { User, LoginCredentials, RegisterData, AuthResponse } from './types'
 
 interface AuthContextType {
   user: User | null
   token: string | null
   isLoading: boolean
-  login: (email: string, password: string) => Promise<any>
-  register: (userData: any) => Promise<any>
+  login: (email: string, password: string) => Promise<AuthResponse>
+  register: (userData: RegisterData) => Promise<AuthResponse>
   logout: () => void
   updateUser: (userData: Partial<User>) => void
+  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -130,6 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     logout,
     updateUser,
+    isAuthenticated: !!user && !!token,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

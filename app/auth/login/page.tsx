@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from '../../lib/auth-context'
+import { ApiError } from '../../lib/types'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -12,6 +14,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -19,16 +22,13 @@ export default function LoginPage() {
     setError('')
 
     try {
-      // Mock login - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Store mock token
-      localStorage.setItem('auth_token', 'mock-token-123')
+      await login(formData.email, formData.password)
       
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (err: any) {
-      setError('Đăng nhập thất bại')
+      const apiError = err as ApiError
+      setError(apiError.message || 'Đăng nhập thất bại. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }

@@ -3,6 +3,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from '../../lib/auth-context'
+import { ApiError } from '../../lib/types'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -16,6 +18,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+  const { register } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,16 +32,13 @@ export default function RegisterPage() {
     }
 
     try {
-      // Mock registration - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Store mock token
-      localStorage.setItem('auth_token', 'mock-token-123')
+      await register(formData)
       
       // Redirect to dashboard
       router.push('/dashboard')
     } catch (err: any) {
-      setError('Đăng ký thất bại')
+      const apiError = err as ApiError
+      setError(apiError.message || 'Đăng ký thất bại. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
