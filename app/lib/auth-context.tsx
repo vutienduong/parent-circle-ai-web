@@ -50,10 +50,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await authAPI.getCurrentUser()
       setUser(response.data.user || response.data)
-    } catch (error) {
-      // Token might be invalid
-      localStorage.removeItem('auth_token')
-      setToken(null)
+    } catch (error: any) {
+      console.log('Failed to fetch current user:', error)
+      // Don't immediately clear token - let the response interceptor handle 401s
+      // Only clear if token is definitely invalid
+      if (error?.response?.status === 401) {
+        localStorage.removeItem('auth_token')
+        setToken(null)
+        setUser(null)
+      }
     } finally {
       setIsLoading(false)
     }

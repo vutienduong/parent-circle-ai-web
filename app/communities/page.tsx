@@ -15,9 +15,22 @@ interface Community {
   created_at: string
 }
 
+interface PlatformStats {
+  total_members: number
+  total_communities: number
+  total_posts: number
+  total_marketplace_items: number
+  total_events: number
+  total_tasks: number
+  active_users_this_month: number
+  new_communities_this_month: number
+}
+
 export default function CommunitiesPage() {
   const [communities, setCommunities] = useState<Community[]>([])
+  const [stats, setStats] = useState<PlatformStats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [statsLoading, setStatsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedLocation, setSelectedLocation] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -41,7 +54,29 @@ export default function CommunitiesPage() {
 
   useEffect(() => {
     fetchCommunities()
+    fetchStats()
   }, [selectedLocation, selectedCategory])
+
+  const fetchStats = async () => {
+    try {
+      setStatsLoading(true)
+      const response = await fetch('http://localhost:3003/api/v1/dashboard/stats', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error)
+    } finally {
+      setStatsLoading(false)
+    }
+  }
 
   const fetchCommunities = async () => {
     try {
@@ -190,21 +225,27 @@ export default function CommunitiesPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Tham gia hơn 200+ nhóm thảo luận để chia sẻ kinh nghiệm nuôi dạy con và nhận hỗ trợ từ cộng đồng
+            Tham gia hơn {stats ? `${stats.total_communities}+` : '50+'} nhóm thảo luận để chia sẻ kinh nghiệm nuôi dạy con và nhận hỗ trợ từ cộng đồng
           </p>
           
           {/* Quick Stats */}
           <div className="flex flex-wrap justify-center gap-6 mt-8">
             <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-gray-200">
-              <div className="text-2xl font-bold text-blue-600">12,000+</div>
+              <div className="text-2xl font-bold text-blue-600">
+                {statsLoading ? '...' : stats ? `${stats.total_members.toLocaleString()}+` : '12,000+'}
+              </div>
               <div className="text-sm text-gray-600">Thành viên tích cực</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-gray-200">
-              <div className="text-2xl font-bold text-purple-600">200+</div>
+              <div className="text-2xl font-bold text-purple-600">
+                {statsLoading ? '...' : stats ? `${stats.total_communities}+` : '50+'}
+              </div>
               <div className="text-sm text-gray-600">Nhóm thảo luận</div>
             </div>
             <div className="bg-white/80 backdrop-blur-sm rounded-xl px-6 py-3 border border-gray-200">
-              <div className="text-2xl font-bold text-green-600">50,000+</div>
+              <div className="text-2xl font-bold text-green-600">
+                {statsLoading ? '...' : stats ? `${stats.total_posts.toLocaleString()}+` : '50,000+'}
+              </div>
               <div className="text-sm text-gray-600">Bài viết hữu ích</div>
             </div>
           </div>

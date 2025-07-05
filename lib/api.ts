@@ -33,7 +33,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear auth token on unauthorized
       localStorage.removeItem('auth_token')
-      window.location.href = '/login'
+      window.location.href = '/auth/login'
     }
     return Promise.reject(error)
   }
@@ -51,7 +51,7 @@ export const authAPI = {
     api.post('/logout'),
   
   getCurrentUser: () =>
-    api.get('/users/me'),
+    api.get('/profile'),
 }
 
 // Password API - New
