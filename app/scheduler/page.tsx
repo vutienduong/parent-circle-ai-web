@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Clock, Plus, CheckCircle, Circle, AlertCircle, Heart, Edit, Trash2, Baby, Users, Bell, Target, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, Clock, Plus, CheckCircle, Circle, AlertCircle, Heart, Edit, Trash2, Baby, Users, Bell, Target, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import Link from 'next/link'
 import { familyEventsAPI, tasksAPI } from '@/lib/api'
 
@@ -36,6 +36,11 @@ export default function SchedulerPage() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState(new Date())
+  
+  // Quick action states
+  const [showEventModal, setShowEventModal] = useState(false)
+  const [showTaskModal, setShowTaskModal] = useState(false)
+  const [showBabyScheduleModal, setShowBabyScheduleModal] = useState(false)
 
   useEffect(() => {
     fetchScheduleData()
@@ -183,6 +188,63 @@ export default function SchedulerPage() {
         task.id === taskId ? { ...task, completed: task.completed } : task
       ))
     }
+  }
+
+  // Quick action handlers
+  const handleAddEvent = async (eventData: any) => {
+    try {
+      const response = await familyEventsAPI.create(eventData)
+      setEvents([...events, response.data])
+      setShowEventModal(false)
+    } catch (error) {
+      console.error('Error adding event:', error)
+    }
+  }
+
+  const handleAddTask = async (taskData: any) => {
+    try {
+      const response = await tasksAPI.create(taskData)
+      setTasks([...tasks, response.data])
+      setShowTaskModal(false)
+    } catch (error) {
+      console.error('Error adding task:', error)
+    }
+  }
+
+  const handleAddBabySchedule = (scheduleData: any) => {
+    // For baby schedule, we'll create multiple events/tasks
+    const scheduleTemplates = {
+      'feeding': {
+        title: 'Cho bé bú/ăn',
+        description: 'Thời gian cho bé bú hoặc ăn',
+        category: 'health',
+        recurring: true
+      },
+      'sleep': {
+        title: 'Giấc ngủ của bé',
+        description: 'Thời gian ngủ của bé',
+        category: 'health',
+        recurring: true
+      },
+      'play': {
+        title: 'Thời gian chơi',
+        description: 'Hoạt động vui chơi với bé',
+        category: 'activity',
+        recurring: true
+      }
+    }
+    
+    // Create events based on selected template
+    const template = scheduleTemplates[scheduleData.type as keyof typeof scheduleTemplates]
+    if (template) {
+      handleAddEvent({
+        ...template,
+        start_time: scheduleData.start_time,
+        end_time: scheduleData.end_time
+      })
+    }
+    
+    setShowBabyScheduleModal(false)
   }
 
   const getPriorityColor = (priority: number) => {
@@ -650,19 +712,28 @@ export default function SchedulerPage() {
                   Thêm nhanh
                 </h3>
                 <div className="space-y-3">
-                  <button className="w-full text-left p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:border-blue-300 transition-all duration-200">
+                  <button 
+                    onClick={() => setShowEventModal(true)}
+                    className="w-full text-left p-3 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:border-blue-300 transition-all duration-200 hover:shadow-md"
+                  >
                     <div className="flex items-center space-x-3">
                       <Calendar className="h-5 w-5 text-blue-600" />
                       <span className="text-sm font-medium text-blue-800">Thêm sự kiện</span>
                     </div>
                   </button>
-                  <button className="w-full text-left p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 hover:border-green-300 transition-all duration-200">
+                  <button 
+                    onClick={() => setShowTaskModal(true)}
+                    className="w-full text-left p-3 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 hover:border-green-300 transition-all duration-200 hover:shadow-md"
+                  >
                     <div className="flex items-center space-x-3">
                       <CheckCircle className="h-5 w-5 text-green-600" />
                       <span className="text-sm font-medium text-green-800">Thêm công việc</span>
                     </div>
                   </button>
-                  <button className="w-full text-left p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:border-purple-300 transition-all duration-200">
+                  <button 
+                    onClick={() => setShowBabyScheduleModal(true)}
+                    className="w-full text-left p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:border-purple-300 transition-all duration-200 hover:shadow-md"
+                  >
                     <div className="flex items-center space-x-3">
                       <Baby className="h-5 w-5 text-purple-600" />
                       <span className="text-sm font-medium text-purple-800">Lịch cho bé</span>
@@ -673,6 +744,362 @@ export default function SchedulerPage() {
             </div>
           </div>
         )}
+
+        {/* Add Event Modal */}
+        {showEventModal && (
+          <AddEventModal 
+            onClose={() => setShowEventModal(false)}
+            onSubmit={handleAddEvent}
+          />
+        )}
+
+        {/* Add Task Modal */}
+        {showTaskModal && (
+          <AddTaskModal 
+            onClose={() => setShowTaskModal(false)}
+            onSubmit={handleAddTask}
+          />
+        )}
+
+        {/* Add Baby Schedule Modal */}
+        {showBabyScheduleModal && (
+          <AddBabyScheduleModal 
+            onClose={() => setShowBabyScheduleModal(false)}
+            onSubmit={handleAddBabySchedule}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Modal Components
+function AddEventModal({ onClose, onSubmit }: { onClose: () => void, onSubmit: (data: any) => void }) {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    start_time: '',
+    end_time: '',
+    category: 'general'
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSubmit(formData)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-gray-900">Thêm sự kiện mới</h3>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian bắt đầu</label>
+            <input
+              type="datetime-local"
+              value={formData.start_time}
+              onChange={(e) => setFormData({...formData, start_time: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian kết thúc</label>
+            <input
+              type="datetime-local"
+              value={formData.end_time}
+              onChange={(e) => setFormData({...formData, end_time: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({...formData, category: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="general">Chung</option>
+              <option value="health">Sức khỏe</option>
+              <option value="education">Giáo dục</option>
+              <option value="activity">Hoạt động</option>
+              <option value="celebration">Lễ hội</option>
+            </select>
+          </div>
+          
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Thêm sự kiện
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function AddTaskModal({ onClose, onSubmit }: { onClose: () => void, onSubmit: (data: any) => void }) {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    due_date: '',
+    priority: 3,
+    category: 'general'
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSubmit(formData)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-gray-900">Thêm công việc mới</h3>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({...formData, title: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              rows={3}
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Hạn hoàn thành</label>
+            <input
+              type="date"
+              value={formData.due_date}
+              onChange={(e) => setFormData({...formData, due_date: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Độ ưu tiên</label>
+            <select
+              value={formData.priority}
+              onChange={(e) => setFormData({...formData, priority: parseInt(e.target.value)})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value={1}>Rất thấp</option>
+              <option value={2}>Thấp</option>
+              <option value={3}>Trung bình</option>
+              <option value={4}>Cao</option>
+              <option value={5}>Khẩn cấp</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
+            <select
+              value={formData.category}
+              onChange={(e) => setFormData({...formData, category: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="general">Chung</option>
+              <option value="health">Sức khỏe</option>
+              <option value="education">Giáo dục</option>
+              <option value="shopping">Mua sắm</option>
+              <option value="celebration">Lễ hội</option>
+            </select>
+          </div>
+          
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Thêm công việc
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+function AddBabyScheduleModal({ onClose, onSubmit }: { onClose: () => void, onSubmit: (data: any) => void }) {
+  const [formData, setFormData] = useState({
+    type: 'feeding',
+    start_time: '',
+    end_time: '',
+    notes: ''
+  })
+
+  const scheduleTypes = {
+    feeding: { label: 'Cho bé ăn/bú', icon: '🍼', color: 'bg-blue-100' },
+    sleep: { label: 'Giấc ngủ', icon: '😴', color: 'bg-purple-100' },
+    play: { label: 'Thời gian chơi', icon: '🎮', color: 'bg-green-100' },
+    bath: { label: 'Tắm rửa', icon: '🛁', color: 'bg-cyan-100' },
+    diaper: { label: 'Thay tã', icon: '👶', color: 'bg-yellow-100' },
+    medicine: { label: 'Uống thuốc', icon: '💊', color: 'bg-red-100' }
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onSubmit(formData)
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-gray-900">Thêm lịch cho bé</h3>
+          <button 
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Loại hoạt động</label>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(scheduleTypes).map(([key, type]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setFormData({...formData, type: key})}
+                  className={`p-3 rounded-lg border text-left transition-all ${
+                    formData.type === key 
+                      ? 'border-purple-500 bg-purple-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg">{type.icon}</span>
+                    <span className="text-sm font-medium">{type.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian bắt đầu</label>
+            <input
+              type="datetime-local"
+              value={formData.start_time}
+              onChange={(e) => setFormData({...formData, start_time: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Thời gian kết thúc</label>
+            <input
+              type="datetime-local"
+              value={formData.end_time}
+              onChange={(e) => setFormData({...formData, end_time: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              required
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ghi chú</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({...formData, notes: e.target.value})}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              rows={2}
+              placeholder="Ví dụ: Cho bé uống 120ml sữa..."
+            />
+          </div>
+          
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              Thêm lịch
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )

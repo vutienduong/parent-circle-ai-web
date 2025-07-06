@@ -270,6 +270,9 @@ export const usersAPI = {
 
 // Dashboard API - New
 export const dashboardAPI = {
+  getDashboard: () =>
+    api.get('/dashboard'),
+    
   getEngagement: () =>
     api.get('/dashboard/engagement'),
   

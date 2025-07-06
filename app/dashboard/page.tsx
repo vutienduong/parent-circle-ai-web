@@ -30,8 +30,19 @@ export default function DashboardPage() {
       setLoading(true)
       
       // Try to fetch from real API
-      const response = await dashboardAPI.getEngagement()
-      setStats(response.data)
+      const response = await dashboardAPI.getDashboard()
+      const data = response.data
+      
+      // Map backend response to frontend expected structure
+      setStats({
+        total_communities: data.platform_stats.total_communities,
+        total_posts: data.platform_stats.total_posts,
+        total_users: data.platform_stats.total_users,
+        user_engagement: data.user_stats.user_posts + data.user_stats.user_events + data.user_stats.user_tasks,
+        recent_activities: data.recent_activities,
+        upcoming_events: data.upcoming_events,
+        pending_tasks: data.pending_tasks
+      })
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
       

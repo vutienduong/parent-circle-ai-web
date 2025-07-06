@@ -75,7 +75,7 @@ export default function CommunityDetailPage() {
 
   const handleJoinCommunity = async () => {
     try {
-      const token = localStorage.getItem('token')
+              const token = localStorage.getItem('auth_token')
       const response = await fetch(`http://localhost:3003/api/v1/communities/${params.id}/join`, {
         method: 'POST',
         headers: {

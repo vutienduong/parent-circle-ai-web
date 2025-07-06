@@ -52,9 +52,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(response.data.user || response.data)
     } catch (error: any) {
       console.log('Failed to fetch current user:', error)
-      // Don't immediately clear token - let the response interceptor handle 401s
-      // Only clear if token is definitely invalid
+      // If token is invalid, clear everything
       if (error?.response?.status === 401) {
+        console.log('Token is invalid, clearing auth state')
         localStorage.removeItem('auth_token')
         setToken(null)
         setUser(null)

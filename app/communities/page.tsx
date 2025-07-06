@@ -62,7 +62,7 @@ export default function CommunitiesPage() {
       setStatsLoading(true)
       const response = await fetch('http://localhost:3003/api/v1/dashboard/stats', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
           'Content-Type': 'application/json'
         }
       })
